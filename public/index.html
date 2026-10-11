@@ -11,8 +11,8 @@
     <header><a class="brand" href="/" aria-label="Daily home"><span class="brand-icon">◒</span> daily<span class="brand-dot">.</span></a><span class="quiet" id="save-status">Your daily calorie journal</span></header>
     <section class="summary" aria-labelledby="total-label">
       <div class="eyebrow" id="total-label">TODAY’S TOTAL</div>
-      <div class="total"><span id="total" aria-live="polite">0</span><span class="unit">kcal</span></div>
-      <p class="summary-note">A little awareness, one meal at a time.</p>
+      <div class="total"><span id="total" aria-live="polite">0</span><span class="goal-divider">/</span><input id="goal" aria-label="Daily calorie goal" aria-describedby="goal-hint" inputmode="decimal" value="2700" autocomplete="off"><span class="unit">kcal</span></div>
+      <p class="summary-note" id="goal-hint">Tap the goal to edit. Saved for this day.</p>
     </section>
     <section class="journal" aria-label="Food journal">
       <div class="day-bar"><div><h1 id="day-title">Today</h1><p id="day-subtitle"></p></div><div class="date-controls"><button id="previous" aria-label="Previous day">‹</button><input id="date" type="date" aria-label="Choose journal date"><button id="next" aria-label="Next day">›</button></div></div>
