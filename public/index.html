@@ -12,7 +12,7 @@
       <div id="progress" class="progress-ring" role="progressbar" aria-label="Daily calorie goal progress" aria-valuemin="0" aria-valuemax="2700" aria-valuenow="0">
         <svg viewBox="0 0 48 48" aria-hidden="true"><circle id="progress-fill" cx="24" cy="24" r="20" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 24 24)"/><path id="progress-check" d="M15 24l6 6 12-12" hidden/></svg>
       </div>
-      <span class="quiet" id="save-status">Your daily calorie journal</span>
+      <div class="header-tools"><span class="quiet" id="save-status">Your daily calorie journal</span><button id="open-calculator" class="calculator-toggle" aria-label="Open calculator" title="Calculator"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 6h8M8 11h1m6 0h1M8 15h1m6 0h1M8 19h1m6 0h1"/></svg></button></div>
     </header>
     <section class="summary" aria-label="Daily calorie total and goal">
       <div class="total"><span id="total" aria-live="polite">0</span><span class="goal-divider">/</span><input id="goal" aria-label="Daily calorie goal" inputmode="decimal" value="2700" autocomplete="off"><span class="unit">kcal</span></div>
@@ -36,5 +36,19 @@
     <footer><span class="local-dot"></span> Saved on this device · Works offline <button id="export">Export data</button></footer>
     <p id="notice" role="status" hidden></p>
     <div id="undo" hidden><span>Entry removed</span><button id="undo-button">Undo</button></div>
-  </main><script type="module" src="/app.js"></script>
+  </main>
+  <dialog id="calculator" aria-labelledby="calculator-title">
+    <div class="calculator-heading"><h2 id="calculator-title">Calculator</h2><button id="close-calculator" aria-label="Close calculator">×</button></div>
+    <input id="calculation" aria-label="Calculation" readonly value="0">
+    <p id="calculation-result" role="status">Enter a calculation</p>
+    <div class="calculator-keys">
+      <button data-key="clear">C</button><button data-key="(" aria-label="Open parenthesis">(</button><button data-key=")" aria-label="Close parenthesis">)</button><button data-key="÷" class="operator" aria-label="Divide">÷</button>
+      <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button><button data-key="×" class="operator" aria-label="Multiply">×</button>
+      <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button><button data-key="−" class="operator" aria-label="Subtract">−</button>
+      <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button><button data-key="+" class="operator" aria-label="Add">+</button>
+      <button data-key="backspace" aria-label="Backspace">⌫</button><button data-key="0">0</button><button data-key="." aria-label="Decimal point">.</button><button data-key="equals" class="equals" aria-label="Equals">=</button>
+    </div>
+    <button id="use-calories" disabled>Use as calories ↗</button>
+  </dialog>
+  <script type="module" src="/app.js"></script><script type="module" src="/calculator-ui.js"></script>
 </body></html>
