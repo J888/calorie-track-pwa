@@ -67,7 +67,7 @@ function render() {
   $('empty').hidden=!!daily.length;$('count').textContent=`${daily.length} ${daily.length===1?'entry':'entries'}`;$('entries').replaceChildren();
   daily.forEach(entry=>{
     const row=document.createElement('div');row.className='entry-row saved';
-    const food=document.createElement('input');food.value=entry.name;food.maxLength=160;food.setAttribute('aria-label','Edit food name');
+    const food=document.createElement('input');food.type='search';food.autocomplete='off';food.value=entry.name;food.maxLength=160;food.setAttribute('aria-label','Edit food entry');
     const calories=document.createElement('input');calories.value=entry.calories;calories.inputMode='decimal';calories.setAttribute('aria-label',`Edit calories for ${entry.name}`);numbersOnly(calories);
     function saveEdit(){const name=food.value.trim();if(!name||!validCalories(calories.value)){notice('Keep a food name and a valid calorie value. Your previous entry is still saved.');return false;}if(persist(entries.map(e=>e.id===entry.id?{...e,name,calories:Number(calories.value)}:e))){$('total').textContent=number.format(totalFor(entries,selectedDay));return true;}return false;}
     row.addEventListener('focusout',e=>{if(!row.contains(e.relatedTarget))saveEdit();});
