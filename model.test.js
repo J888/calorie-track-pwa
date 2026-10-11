@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {dayKey,validCalories,totalFor,suggestionsFor,validateEntries,goalFor,validGoal,validateGoals} from './public/model.js';
+import {dayKey,validCalories,totalFor,suggestionsFor,validateEntries,goalFor,validGoal,validateGoals,dailyProgress,numericDraft} from './public/model.js';
 const entries=[{id:'a',name:'Oatmeal',calories:150.5,day:'2026-10-10',createdAt:1},{id:'b',name:'oatmeal',calories:200,day:'2026-10-11',createdAt:2},{id:'c',name:'Toast',calories:100.1,day:'2026-10-11',createdAt:3}];
 test('totals only include the selected day and avoid floating point artifacts',()=>{assert.equal(totalFor(entries,'2026-10-11'),300.1);assert.equal(totalFor(entries,'2026-10-09'),0);});
 test('suggestions reuse the latest value across days and deduplicate names',()=>{assert.deepEqual(suggestionsFor(entries,'oat').map(e=>e.calories),[200]);assert.equal(suggestionsFor(entries,'toast')[0].name,'Toast');});
 test('calories allow zero and decimals, reject empty, negative and invalid values',()=>{for(const value of ['0','12.25','200'])assert.equal(validCalories(value),true);for(const value of ['', '-1', 'NaN','Infinity','12abc','2.333'])assert.equal(validCalories(value),false);});
 test('storage validation rejects corrupt records',()=>{assert.equal(validateEntries(entries),true);assert.equal(validateEntries([{...entries[0],calories:'100'}]),false);assert.equal(validateEntries({}),false);});
 test('day keys use the local calendar date',()=>assert.equal(dayKey(new Date(2026,9,11,23,59)),'2026-10-11'));
+test('progress follows calories and caps at the goal',()=>{assert.deepEqual(dailyProgress(0,2700),{remaining:2700,percent:0});assert.deepEqual(dailyProgress(1350,2700),{remaining:1350,percent:50});assert.deepEqual(dailyProgress(2800,2700),{remaining:0,percent:100});assert.equal(dailyProgress(100.1,200.2).remaining,100.1);});
+test('numeric input permits decimal editing and rejects letters, signs, and exponents',()=>{for(const value of ['','2','2.','2.35'])assert.equal(numericDraft(value),true);for(const value of ['abc','12kcal','-1','1e3','1.2.3','1.234'])assert.equal(numericDraft(value),false);});
 test('goals default to 2700 and each day retains its own override',()=>{const goals={'2026-10-10':2400,'2026-10-11':2800};assert.equal(goalFor(goals,'2026-10-09'),2700);assert.equal(goalFor(goals,'2026-10-10'),2400);assert.equal(goalFor(JSON.parse(JSON.stringify(goals)),'2026-10-11'),2800);});
 test('goal storage rejects invalid values and accepts positive decimal goals',()=>{assert.equal(validGoal('2700'),true);assert.equal(validGoal('2000.5'),true);for(const value of ['','0','-1','Infinity','100001'])assert.equal(validGoal(value),false);assert.equal(validateGoals({'2026-10-11':2700}),true);assert.equal(validateGoals({'2026-10-11':'2700'}),false);assert.equal(validateGoals(null),false);assert.equal(validateGoals([]),false);});

@@ -6,3 +6,17 @@
 #goal:hover,#goal:focus{border-bottom-color:#718567;background:#edf1e5}
 #goal[aria-invalid=true]{border-bottom-color:#9a533f}
 @media(max-width:520px){:root .total #total{font-size:52px;letter-spacing:-2px}#goal{font-size:32px}.goal-divider{font-size:26px}:root .total{gap:8px}.total .unit{font-size:15px}}
+:root{color-scheme:dark;color:#fff0e4;background:#16100d}
+body{min-height:100vh;background:radial-gradient(ellipse at 50% 0%,#71321655,transparent 60%),linear-gradient(155deg,#21140f,#130f0d 65%,#28150e);background-attachment:fixed}
+main{padding-top:24px}header{justify-content:space-between;min-height:44px}.quiet{color:#b29988}.summary{padding:40px 0 40px}
+.total #total{color:#fff3e8}.goal-divider,.unit{color:#ad8064}#goal{color:#ffa65b;border-bottom-color:#90522f}#goal:hover,#goal:focus{border-bottom-color:#ffb36b;background:#ff883311}#goal[aria-invalid=true]{border-bottom-color:#ff9580}
+.summary-note{color:#e8a271;font-size:14px;margin-top:12px}
+.progress-ring{--progress-color:#f15a50;width:44px;height:44px;flex-shrink:0}.progress-ring svg{display:block;width:100%;height:100%;overflow:visible}.progress-ring circle,.progress-ring path{fill:none;stroke:var(--progress-color);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.progress-ring[data-level="red"]{--progress-color:#f15a50}.progress-ring[data-level="yellow"]{--progress-color:#f5d653}.progress-ring[data-level="orange"]{--progress-color:#ff9c43}.progress-ring[data-level="green"]{--progress-color:#7ad684}
+.journal{background:linear-gradient(145deg,#302019ee,#211812ee);border-color:#61402b;box-shadow:0 16px 50px #0003}#day-subtitle{color:#bca08c}.date-controls button,.date-controls input{color:#e2a479}.column-labels{color:#b9987e}
+.entry-row{border-bottom-color:#4c3325}.draft{background:linear-gradient(100deg,#70371677,#b85a202b);border-color:#744323}.entry-row input{color:#ffefde;font-size:16px}.entry-row input:focus{box-shadow:0 2px #ed9957}.entry-row input::placeholder{color:#c29876}.draft-mark{color:#d9a073}.hint{color:#b49783}
+#suggestions{background:#312219;border-color:#744323;box-shadow:0 10px 28px #0006}#suggestions button{color:#ffefde}#suggestions button[aria-selected=true],#suggestions button:hover{background:#5b3522}#suggestions .suggestion-value{color:#e2a479}.remove{color:#c09b7f}.remove:hover{background:#744323;color:#fff0e4}
+.empty-icon{background:#4b3020;color:#e2a479}h2{color:#d4b39a}#empty p{color:#b49783}.journal-footer{border-color:#4c3325;color:#b9987e}.journal-footer button,footer button{color:#f3ac74}footer{color:#ad927e}.local-dot{background:#fa9e51}#notice{color:#ffb19a}#undo{background:#63391f;color:#fff0e4}#undo button{color:#ffd28a}button:focus-visible,a:focus-visible{outline-color:#ffa65b}
+@media(max-width:520px){main{padding-top:20px}.summary{padding:36px 0 30px}}@media(max-width:360px){.day-bar{flex-wrap:wrap}.date-controls{margin-left:auto}}
+@media(prefers-reduced-motion:no-preference){#progress-fill{transition:stroke-dasharray .3s ease,stroke .3s ease}}
+.entry-row{grid-template-columns:minmax(0,1fr) 90px 72px}.column-labels{padding-right:102px}.draft-mark{text-align:right;padding-right:9px}.row-actions{display:flex;align-items:center;gap:0}.row-actions button{width:36px;height:40px;padding:0}.duplicate{border:0;background:transparent;border-radius:6px;font-size:23px;color:#e2a479}.duplicate:hover{background:#744323;color:#fff0e4}@media(max-width:520px){.entry-row{grid-template-columns:minmax(0,1fr) 70px 72px}}

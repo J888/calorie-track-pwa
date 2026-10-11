@@ -1,6 +1,8 @@
 export const STORAGE_KEY = 'daily-calories-v1';
 export const GOALS_KEY = 'daily-calorie-goals-v1';
 export const DEFAULT_GOAL = 2700;
+export function dailyProgress(total, goal) { return {remaining:Math.max(0,Math.round((goal-total)*100)/100),percent:Math.min(100,Math.max(0,total/goal*100))}; }
+export function numericDraft(value) { return /^\d*(\.\d{0,2})?$/.test(value); }
 export function validGoal(value) { return validCalories(value) && Number(value) > 0; }
 export function goalFor(goals, day) { return Object.hasOwn(goals,day) ? goals[day] : DEFAULT_GOAL; }
 export function validateGoals(value) { return value !== null && typeof value === 'object' && !Array.isArray(value) && Object.entries(value).every(([day, goal])=>/^\d{4}-\d{2}-\d{2}$/.test(day) && typeof goal === 'number' && validGoal(goal)); }

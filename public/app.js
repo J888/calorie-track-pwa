@@ -1,4 +1,4 @@
-import { STORAGE_KEY, GOALS_KEY, goalFor, validGoal, validateGoals, dayKey, validCalories, totalFor, suggestionsFor, validateEntries } from './model.js';
+import { STORAGE_KEY, GOALS_KEY, goalFor, validGoal, validateGoals, dayKey, validCalories, totalFor, suggestionsFor, validateEntries, dailyProgress, numericDraft } from './model.js';
 const $ = id => document.getElementById(id);
 let entries = [], selectedDay = dayKey(), active = -1, matches = [], removed = null, undoTimer, storageUnreadable = false;
 const number = new Intl.NumberFormat(undefined, {maximumFractionDigits:2});
@@ -8,10 +8,29 @@ try { const raw=localStorage.getItem(STORAGE_KEY); if(raw){ const data=JSON.pars
 try { const raw=localStorage.getItem(GOALS_KEY); if(raw){ const data=JSON.parse(raw); if(!validateGoals(data)) throw Error(); goals=data; } } catch { goalsUnreadable=true; notice('Saved goals could not be read. Goal saving is paused to protect them.'); }
 function sizeGoal() { $('goal').style.width=`${Math.max(4.5,$('goal').value.length+.5)}ch`; }
 function showGoal() { $('goal').value=goalFor(goals,selectedDay); $('goal').removeAttribute('aria-invalid');sizeGoal(); }
+function updateSummary() {
+  const total=totalFor(entries,selectedDay),goal=goalFor(goals,selectedDay),progress=dailyProgress(total,goal);
+  $('total').textContent=number.format(total);
+  $('remaining').textContent=total>goal?`${number.format(Math.round((total-goal)*100)/100)} over! 💪🏻`:`${number.format(progress.remaining)} to go! 👀`;
+  $('progress-fill').setAttribute('stroke-dasharray',`${progress.percent} 100`);
+  $('progress-fill').style.opacity=progress.percent===0?'0':'1';
+  $('progress').dataset.level=progress.percent<20?'red':progress.percent<40?'yellow':progress.percent<70?'orange':'green';
+  $('total').style.color=getComputedStyle($('progress')).getPropertyValue('--progress-color');
+  $('progress-check').toggleAttribute('hidden',progress.percent<100);
+  $('progress').setAttribute('aria-valuemax',String(goal));$('progress').setAttribute('aria-valuenow',String(Math.min(total,goal)));
+  $('progress').setAttribute('aria-valuetext',`${number.format(total)} of ${number.format(goal)} kcal`);
+}
+function numbersOnly(input) {
+  let previous=input.value;
+  input.addEventListener('beforeinput',e=>{if(e.data!==null&&!e.isComposing){const next=input.value.slice(0,input.selectionStart)+e.data+input.value.slice(input.selectionEnd);if(!numericDraft(next))e.preventDefault();}});
+  input.addEventListener('input',()=>{if(numericDraft(input.value))previous=input.value;else input.value=numericDraft(previous)?previous:'';});
+  input.addEventListener('focus',()=>{previous=input.value;});
+}
+numbersOnly($('calories'));numbersOnly($('goal'));
 function saveGoal() {
   if(!validGoal($('goal').value)){$('goal').setAttribute('aria-invalid','true');notice('Enter a goal greater than 0, up to 100,000 kcal, with at most two decimal places.');return false;}
   if(goalsUnreadable){notice('Goal saving is paused because existing goal data could not be read.');return false;}
-  try { const next={...goals,[selectedDay]:Number($('goal').value)};localStorage.setItem(GOALS_KEY,JSON.stringify(next));goals=next;showGoal();$('save-status').textContent='All entries saved';notice();return true; }
+  try { const next={...goals,[selectedDay]:Number($('goal').value)};localStorage.setItem(GOALS_KEY,JSON.stringify(next));goals=next;showGoal();updateSummary();$('save-status').textContent='All entries saved';notice();return true; }
   catch { notice('Could not save your goal. Check browser storage and try again.');return false; }
 }
 $('goal').addEventListener('input',()=>{sizeGoal();$('goal').removeAttribute('aria-invalid');});
@@ -20,7 +39,7 @@ $('goal').addEventListener('blur',saveGoal);
 $('goal').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(saveGoal())$('goal').blur();}if(e.key==='Escape'){showGoal();notice();$('goal').blur();}});
 function persist(next) {
   if(storageUnreadable){notice('Saving is paused because existing data could not be read.');return false;}
-  try { localStorage.setItem(STORAGE_KEY,JSON.stringify(next)); entries=next; $('save-status').textContent='All entries saved'; notice(); return true; }
+  try { localStorage.setItem(STORAGE_KEY,JSON.stringify(next)); entries=next; updateSummary();$('save-status').textContent='All entries saved'; notice(); return true; }
   catch { notice('Could not save on this device. Your entry is still here. Check browser storage and try again.'); return false; }
 }
 function closeSuggestions() { $('suggestions').hidden=true; $('food').setAttribute('aria-expanded','false'); $('food').removeAttribute('aria-activedescendant'); active=-1; }
@@ -42,21 +61,23 @@ function render() {
   $('date').value=selectedDay;$('today').hidden=selectedDay===today;
   $('day-title').textContent=selectedDay===today?'Today':date.toLocaleDateString(undefined,{weekday:'long'});
   $('day-subtitle').textContent=date.toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});
-  $('total-label').textContent=selectedDay===today?'TODAY’S TOTAL':'DAILY TOTAL';
-  $('total').textContent=number.format(totalFor(entries,selectedDay));
+  updateSummary();
   showGoal();
   const daily=entries.filter(e=>e.day===selectedDay).sort((a,b)=>b.createdAt-a.createdAt);
   $('empty').hidden=!!daily.length;$('count').textContent=`${daily.length} ${daily.length===1?'entry':'entries'}`;$('entries').replaceChildren();
   daily.forEach(entry=>{
-    const row=document.createElement('div');row.className='entry-row';
+    const row=document.createElement('div');row.className='entry-row saved';
     const food=document.createElement('input');food.value=entry.name;food.maxLength=160;food.setAttribute('aria-label','Edit food name');
-    const calories=document.createElement('input');calories.value=entry.calories;calories.inputMode='decimal';calories.setAttribute('aria-label',`Edit calories for ${entry.name}`);
+    const calories=document.createElement('input');calories.value=entry.calories;calories.inputMode='decimal';calories.setAttribute('aria-label',`Edit calories for ${entry.name}`);numbersOnly(calories);
     function saveEdit(){const name=food.value.trim();if(!name||!validCalories(calories.value)){notice('Keep a food name and a valid calorie value. Your previous entry is still saved.');return false;}if(persist(entries.map(e=>e.id===entry.id?{...e,name,calories:Number(calories.value)}:e))){$('total').textContent=number.format(totalFor(entries,selectedDay));return true;}return false;}
     row.addEventListener('focusout',e=>{if(!row.contains(e.relatedTarget))saveEdit();});
-    row.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(saveEdit()){render();$('food').focus();}}});
+    row.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'){e.preventDefault();if(saveEdit()){render();$('food').focus();}}});
+    const duplicate=document.createElement('button');duplicate.type='button';duplicate.className='duplicate';duplicate.textContent='⧉';duplicate.title='Duplicate entry';duplicate.setAttribute('aria-label',`Duplicate ${entry.name}`);
+    duplicate.addEventListener('click',()=>{if(!saveEdit())return;const source=entries.find(e=>e.id===entry.id);if(source&&persist([...entries,{...source,id:crypto.randomUUID(),createdAt:Math.max(Date.now(),...entries.map(e=>e.createdAt))+1}]))render();});
     const remove=document.createElement('button');remove.className='remove';remove.textContent='×';remove.setAttribute('aria-label',`Remove ${entry.name}`);
     remove.addEventListener('click',()=>{if(persist(entries.filter(e=>e.id!==entry.id))){removed=entry;render();$('undo').hidden=false;clearTimeout(undoTimer);undoTimer=setTimeout(()=>{$('undo').hidden=true;removed=null;},8000);}});
-    row.append(food,calories,remove);$('entries').append(row);
+    const actions=document.createElement('div');actions.className='row-actions';actions.append(duplicate,remove);
+    row.append(food,calories,actions);$('entries').append(row);
   });
 }
 $('entry-form').addEventListener('submit',e=>{e.preventDefault();commitDraft(true);});
@@ -76,7 +97,7 @@ $('today').addEventListener('click',()=>changeDay(dayKey()));
 $('undo-button').addEventListener('click',()=>{if(removed&&persist([...entries,removed])){removed=null;clearTimeout(undoTimer);$('undo').hidden=true;render();}});
 $('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),entries,goals,defaultGoal:2700},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`daily-calories-${dayKey()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 window.addEventListener('storage',e=>{if(e.key===STORAGE_KEY){try{const data=JSON.parse(e.newValue??'[]');if(validateEntries(data)){entries=data;render();}}catch{notice('Another tab changed your saved data. Reload to check it.');}}});
-window.addEventListener('storage',e=>{if(e.key===GOALS_KEY){try{const data=JSON.parse(e.newValue??'{}');if(validateGoals(data)){goals=data;showGoal();}else throw Error();}catch{notice('Another tab changed your saved goals. Reload to check them.');}}});
+window.addEventListener('storage',e=>{if(e.key===GOALS_KEY){try{const data=JSON.parse(e.newValue??'{}');if(validateGoals(data)){goals=data;showGoal();updateSummary();}else throw Error();}catch{notice('Another tab changed your saved goals. Reload to check them.');}}});
 let lastToday=dayKey();setInterval(()=>{const today=dayKey();if(today!==lastToday){if(selectedDay===lastToday&&commitDraft())selectedDay=today;lastToday=today;render();}},30000);
 render();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>notice('Offline mode is unavailable. You can still use the tracker while connected.'));
