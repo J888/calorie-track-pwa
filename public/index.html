@@ -33,6 +33,13 @@
       <div id="empty"><span class="empty-icon">☷</span><h2>A fresh page for your day</h2><p>Your meals will appear here as you go.</p></div>
       <div class="journal-footer"><span id="count">0 entries</span><button id="today" hidden>Back to today ↗</button></div>
     </section>
+    <section class="weight-chart-card" aria-labelledby="weight-chart-heading">
+      <div class="weight-chart-heading"><div><h2 id="weight-chart-heading">Weight & calories</h2><p id="weight-chart-range"></p></div><button id="sample-weights" type="button">Show sample data</button></div>
+      <div class="chart-legend"><span class="legend-weight">Weight</span><span class="legend-calories">Calories</span><span class="legend-hit">Goal hit</span><span class="legend-missed">Below goal</span></div>
+      <p id="weight-chart-demo" hidden>Sample data · preview only, not saved to your weigh-ins.</p>
+      <svg id="weight-chart" viewBox="0 0 360 220" role="img" aria-label="Weight and calories over the last seven days; pounds on the left, calories on the right" hidden></svg>
+      <p id="weight-chart-empty">Add a weigh-in or food entry to start your seven-day chart.</p>
+    </section>
     <footer><span class="local-dot"></span> Saved on this device · Works offline <button id="export">Export data</button></footer>
     <p id="notice" role="status" hidden></p>
     <div id="undo" hidden><span>Entry removed</span><button id="undo-button">Undo</button></div>

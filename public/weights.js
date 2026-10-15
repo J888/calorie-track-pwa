@@ -1,5 +1,6 @@
 import {dayKey} from './model.js';
 export const WEIGHTS_KEY='daily-weigh-ins-v1';
+export function weightSeries(weights,endDay){return Array.from({length:7},(_,i)=>{const date=new Date(`${endDay}T12:00:00`);date.setDate(date.getDate()-6+i);const day=dayKey(date);return {day,weight:weights[day]??null};});}
 export function validWeight(value){return /^\d+(\.\d{1,2})?$/.test(String(value).trim())&&Number(value)>0&&Number(value)<=2000;}
 export function validateWeights(value){return value!==null&&typeof value==='object'&&!Array.isArray(value)&&Object.entries(value).every(([day,weight])=>/^\d{4}-\d{2}-\d{2}$/.test(day)&&typeof weight==='number'&&validWeight(weight));}
 export function averageWeight(weights,endDay){

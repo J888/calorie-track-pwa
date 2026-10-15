@@ -1,13 +1,16 @@
 import { STORAGE_KEY, GOALS_KEY, goalFor, validGoal, validateGoals, dayKey, validCalories, totalFor, suggestionsFor, validateEntries, dailyProgress, numericDraft } from './model.js';
 const $ = id => document.getElementById(id);
 import {WEIGHTS_KEY,validWeight,validateWeights,averageWeight} from './weights.js';
+import {renderWeightChart} from './weight-chart.js';
+let sampleWeights=false;
+$('sample-weights').addEventListener('click',()=>{sampleWeights=!sampleWeights;renderWeightChart(weights,selectedDay,sampleWeights,entries,goals);});
 let weights={},weightsUnreadable=false,weightDay;
 let entries = [], selectedDay = dayKey(), active = -1, matches = [], removed = null, undoTimer, storageUnreadable = false;
 const number = new Intl.NumberFormat(undefined, {maximumFractionDigits:2});
 let goals = {}, goalsUnreadable = false;
 function notice(message='') { $('notice').textContent=message; $('notice').hidden=!message; }
 try{const raw=localStorage.getItem(WEIGHTS_KEY);if(raw){const data=JSON.parse(raw);if(!validateWeights(data))throw Error();weights=data;}}catch{weightsUnreadable=true;notice('Saved weigh-ins could not be read. Weight saving is paused to protect them.');}
-function showWeightAverage(){const result=averageWeight(weights,selectedDay);$('weight-average').textContent=result.average===null?'— lbs':`${result.average.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})} lbs`;$('weight-average').title=`${result.count} weigh-in${result.count===1?'':'s'} in the seven days ending ${selectedDay}`;}
+function showWeightAverage(){const result=averageWeight(weights,selectedDay);$('weight-average').textContent=result.average===null?'— lbs':`${result.average.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})} lbs`;$('weight-average').title=`${result.count} weigh-in${result.count===1?'':'s'} in the seven days ending ${selectedDay}`;renderWeightChart(weights,selectedDay,sampleWeights,entries,goals);}
 function saveWeights(next){if(weightsUnreadable){$('weight-error').textContent='Saved weigh-ins could not be read. Saving is paused.';return false;}try{localStorage.setItem(WEIGHTS_KEY,JSON.stringify(next));weights=next;showWeightAverage();$('save-status').textContent='All entries saved';return true;}catch{$('weight-error').textContent='Could not save. Check browser storage and try again.';return false;}}
 $('open-weigh-in').addEventListener('click',()=>{weightDay=selectedDay;$('weigh-in-date').textContent=new Date(`${weightDay}T12:00:00`).toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});$('weight-input').value=weights[weightDay]??'';$('weight-error').textContent='';$('remove-weight').hidden=!Object.hasOwn(weights,weightDay);$('weigh-in').showModal();$('weight-input').focus();$('weight-input').select();});
 $('close-weigh-in').addEventListener('click',()=>$('weigh-in').close());
@@ -28,6 +31,7 @@ function updateSummary() {
   $('progress-check').toggleAttribute('hidden',progress.percent<100);
   $('progress').setAttribute('aria-valuemax',String(goal));$('progress').setAttribute('aria-valuenow',String(Math.min(total,goal)));
   $('progress').setAttribute('aria-valuetext',`${number.format(total)} of ${number.format(goal)} kcal`);
+  renderWeightChart(weights,selectedDay,sampleWeights,entries,goals);
 }
 function numbersOnly(input) {
   let previous=input.value;
