@@ -9,10 +9,10 @@
 <body>
   <main>
     <header>
-      <div id="progress" class="progress-ring" role="progressbar" aria-label="Daily calorie goal progress" aria-valuemin="0" aria-valuemax="2700" aria-valuenow="0">
+      <div class="header-stats"><div id="progress" class="progress-ring" role="progressbar" aria-label="Daily calorie goal progress" aria-valuemin="0" aria-valuemax="2700" aria-valuenow="0">
         <svg viewBox="0 0 48 48" aria-hidden="true"><circle id="progress-fill" cx="24" cy="24" r="20" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 24 24)"/><path id="progress-check" d="M15 24l6 6 12-12" hidden/></svg>
-      </div>
-      <div class="header-tools"><span class="quiet" id="save-status">Your daily calorie journal</span><button id="open-calculator" class="calculator-toggle" aria-label="Open calculator" title="Calculator"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 6h8M8 11h1m6 0h1M8 15h1m6 0h1M8 19h1m6 0h1"/></svg></button></div>
+      </div><div class="weight-average"><span id="weight-average" aria-live="polite">— lbs</span><span class="weight-caption">7-day avg</span></div></div>
+      <div class="header-tools"><span class="quiet" id="save-status">Your daily calorie journal</span><button id="open-weigh-in" class="calculator-toggle" aria-label="Enter daily weigh-in" title="Morning weigh-in"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7 7h10v6H7zM12 11l2-2M8 16v2m8-2v2"/></svg></button><button id="open-calculator" class="calculator-toggle" aria-label="Open calculator" title="Calculator"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 6h8M8 11h1m6 0h1M8 15h1m6 0h1M8 19h1m6 0h1"/></svg></button></div>
     </header>
     <section class="summary" aria-label="Daily calorie total and goal">
       <div class="total"><span id="total" aria-live="polite">0</span><span class="goal-divider">/</span><input id="goal" aria-label="Daily calorie goal" inputmode="decimal" value="2700" autocomplete="off"><span class="unit">kcal</span></div>
@@ -37,6 +37,15 @@
     <p id="notice" role="status" hidden></p>
     <div id="undo" hidden><span>Entry removed</span><button id="undo-button">Undo</button></div>
   </main>
+  <dialog id="weigh-in" aria-labelledby="weigh-in-title">
+    <form id="weigh-in-form">
+      <div class="calculator-heading"><h2 id="weigh-in-title">Morning weigh-in</h2><button id="close-weigh-in" type="button" aria-label="Close weigh-in">×</button></div>
+      <p id="weigh-in-date"></p>
+      <label for="weight-input">Weight (lbs)</label><input id="weight-input" inputmode="decimal" autocomplete="off" placeholder="e.g. 180.5" required aria-describedby="weight-error">
+      <p id="weight-error" role="status"></p>
+      <button class="save-weight" type="submit">Save weigh-in</button><button id="remove-weight" type="button" hidden>Remove weigh-in</button>
+    </form>
+  </dialog>
   <dialog id="calculator" aria-labelledby="calculator-title">
     <div class="calculator-heading"><h2 id="calculator-title">Calculator</h2><button id="close-calculator" aria-label="Close calculator">×</button></div>
     <input id="calculation" aria-label="Calculation" readonly value="0">
