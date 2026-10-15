@@ -6,8 +6,6 @@ export function renderWeightChart(weights,endDay,sample=false,entries=[],goals={
   const svg=document.getElementById('weight-chart'),values=series.filter(p=>p.weight!==null).map(p=>p.weight);
   const hasData=values.length>0||series.some(p=>p.calories!==null);
   svg.replaceChildren();svg.toggleAttribute('hidden',!hasData);document.getElementById('weight-chart-empty').hidden=hasData;
-  document.getElementById('weight-chart-demo').hidden=!sample;
-  document.getElementById('sample-weights').textContent=sample?'Show my weigh-ins':'Show sample data';
   const dateLabel=day=>new Date(`${day}T12:00:00`).toLocaleDateString(undefined,{month:'short',day:'numeric'});
   document.getElementById('weight-chart-range').textContent=`${dateLabel(series[0].day)} – ${dateLabel(endDay)}`;
   if(!hasData)return;

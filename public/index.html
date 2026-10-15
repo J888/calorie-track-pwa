@@ -12,7 +12,8 @@
       <div class="header-stats"><div id="progress" class="progress-ring" role="progressbar" aria-label="Daily calorie goal progress" aria-valuemin="0" aria-valuemax="2700" aria-valuenow="0">
         <svg viewBox="0 0 48 48" aria-hidden="true"><circle id="progress-fill" cx="24" cy="24" r="20" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 24 24)"/><path id="progress-check" d="M15 24l6 6 12-12" hidden/></svg>
       </div><div class="weight-average"><span id="weight-average" aria-live="polite">— lbs</span><span class="weight-caption">7-day avg</span></div></div>
-      <div class="header-tools"><span class="quiet" id="save-status">Your daily calorie journal</span><button id="open-weigh-in" class="calculator-toggle" aria-label="Enter daily weigh-in" title="Morning weigh-in"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7 7h10v6H7zM12 11l2-2M8 16v2m8-2v2"/></svg></button><button id="open-calculator" class="calculator-toggle" aria-label="Open calculator" title="Calculator"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 6h8M8 11h1m6 0h1M8 15h1m6 0h1M8 19h1m6 0h1"/></svg></button></div>
+      <div class="header-tools"><span id="save-status" hidden></span><button id="open-weigh-in" class="calculator-toggle" aria-label="Enter daily weigh-in" title="Morning weigh-in"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M7 7h10v6H7zM12 11l2-2M8 16v2m8-2v2"/></svg></button><button id="open-calculator" class="calculator-toggle" aria-label="Open calculator" title="Calculator"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M8 6h8M8 11h1m6 0h1M8 15h1m6 0h1M8 19h1m6 0h1"/></svg></button></div>
+      <button id="open-settings" class="calculator-toggle" aria-label="Open settings" title="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-.6 2.3-2 .9-2.1-.6-2 3.4L4 10.7v2.6L2.3 15l2 3.4 2.1-.6 2 .9L9 21h4l.6-2.3 2-.9 2.1.6 2-3.4-1.7-1.7v-2.6L19.7 9l-2-3.4-2.1.6-2-.9L13 3Z"/><circle cx="11" cy="12" r="3"/></svg></button>
     </header>
     <section class="summary" aria-label="Daily calorie total and goal">
       <div class="total"><span id="total" aria-live="polite">0</span><span class="goal-divider">/</span><input id="goal" aria-label="Daily calorie goal" inputmode="decimal" value="2700" autocomplete="off"><span class="unit">kcal</span></div>
@@ -34,16 +35,31 @@
       <div class="journal-footer"><span id="count">0 entries</span><button id="today" hidden>Back to today ↗</button></div>
     </section>
     <section class="weight-chart-card" aria-labelledby="weight-chart-heading">
-      <div class="weight-chart-heading"><div><h2 id="weight-chart-heading">Weight & calories</h2><p id="weight-chart-range"></p></div><button id="sample-weights" type="button">Show sample data</button></div>
+      <div class="weight-chart-heading"><div><h2 id="weight-chart-heading">Weight & calories</h2><p id="weight-chart-range"></p></div></div>
       <div class="chart-legend"><span class="legend-weight">Weight</span><span class="legend-calories">Calories</span><span class="legend-hit">Goal hit</span><span class="legend-missed">Below goal</span></div>
-      <p id="weight-chart-demo" hidden>Sample data · preview only, not saved to your weigh-ins.</p>
       <svg id="weight-chart" viewBox="0 0 360 220" role="img" aria-label="Weight and calories over the last seven days; pounds on the left, calories on the right" hidden></svg>
       <p id="weight-chart-empty">Add a weigh-in or food entry to start your seven-day chart.</p>
+    </section>
+    <section class="weight-chart-card" aria-labelledby="bmi-heading">
+      <div class="weight-chart-heading"><div><h2 id="bmi-heading">BMI</h2><p id="bmi-range"></p></div></div>
+      <div id="bmi-guides" class="chart-legend" hidden><span class="legend-underweight">Underweight below 18.5</span><span class="legend-normal">Normal 18.5–&lt;25</span></div>
+      <svg id="bmi-chart" viewBox="0 0 360 220" role="img" aria-label="BMI over the last seven days" hidden></svg>
+      <p id="bmi-empty">Set your height and age in Settings to calculate BMI.</p>
+      <p id="bmi-note"></p>
     </section>
     <footer><span class="local-dot"></span> Saved on this device · Works offline <button id="export">Export data</button></footer>
     <p id="notice" role="status" hidden></p>
     <div id="undo" hidden><span>Entry removed</span><button id="undo-button">Undo</button></div>
   </main>
+  <dialog id="settings" aria-labelledby="settings-title">
+    <form id="settings-form">
+      <div class="calculator-heading"><h2 id="settings-title">Settings</h2><button id="close-settings" type="button" aria-label="Close settings">×</button></div>
+      <p class="settings-help">Used to calculate BMI. Saved on this device.</p>
+      <fieldset><legend>Height</legend><div class="height-fields"><label>Feet<input id="height-feet" type="number" inputmode="numeric" min="0" max="8" step="1" required></label><label>Inches<input id="height-inches" type="number" inputmode="decimal" min="0" max="11.99" step="0.01" required></label></div></fieldset>
+      <label class="age-field">Age (years)<input id="age" type="number" inputmode="numeric" min="1" max="130" step="1" required></label>
+      <p id="settings-error" role="status"></p><button type="submit" class="save-weight">Save settings</button>
+    </form>
+  </dialog>
   <dialog id="weigh-in" aria-labelledby="weigh-in-title">
     <form id="weigh-in-form">
       <div class="calculator-heading"><h2 id="weigh-in-title">Morning weigh-in</h2><button id="close-weigh-in" type="button" aria-label="Close weigh-in">×</button></div>

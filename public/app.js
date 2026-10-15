@@ -2,15 +2,21 @@ import { STORAGE_KEY, GOALS_KEY, goalFor, validGoal, validateGoals, dayKey, vali
 const $ = id => document.getElementById(id);
 import {WEIGHTS_KEY,validWeight,validateWeights,averageWeight} from './weights.js';
 import {renderWeightChart} from './weight-chart.js';
-let sampleWeights=false;
-$('sample-weights').addEventListener('click',()=>{sampleWeights=!sampleWeights;renderWeightChart(weights,selectedDay,sampleWeights,entries,goals);});
+import {SETTINGS_KEY,validSettings} from './settings.js';
+import {renderBmiChart} from './bmi-chart.js';
+const sampleWeights=false;
+let settings=null,settingsUnreadable=false;
 let weights={},weightsUnreadable=false,weightDay;
 let entries = [], selectedDay = dayKey(), active = -1, matches = [], removed = null, undoTimer, storageUnreadable = false;
 const number = new Intl.NumberFormat(undefined, {maximumFractionDigits:2});
 let goals = {}, goalsUnreadable = false;
 function notice(message='') { $('notice').textContent=message; $('notice').hidden=!message; }
+try{const raw=localStorage.getItem(SETTINGS_KEY);if(raw){const value=JSON.parse(raw);if(!validSettings(value))throw Error();settings=value;}}catch{settingsUnreadable=true;notice('Saved settings could not be read. Saving settings is paused to protect them.');}
+$('open-settings').addEventListener('click',()=>{$('height-feet').value=settings?.feet??'';$('height-inches').value=settings?.inches??'';$('age').value=settings?.age??'';$('settings-error').textContent='';$('settings').showModal();});
+$('close-settings').addEventListener('click',()=>$('settings').close());
+$('settings-form').addEventListener('submit',event=>{event.preventDefault();const next={feet:Number($('height-feet').value),inches:Number($('height-inches').value),age:Number($('age').value)};if(!validSettings(next)){$('settings-error').textContent='Enter a valid height (inches from 0 to below 12) and age (1–130).';return;}if(settingsUnreadable){$('settings-error').textContent='Saving is paused because existing settings could not be read.';return;}try{localStorage.setItem(SETTINGS_KEY,JSON.stringify(next));settings=next;renderBmiChart(weights,selectedDay,settings);$('settings').close();}catch{$('settings-error').textContent='Could not save settings. Check browser storage and try again.';}});
 try{const raw=localStorage.getItem(WEIGHTS_KEY);if(raw){const data=JSON.parse(raw);if(!validateWeights(data))throw Error();weights=data;}}catch{weightsUnreadable=true;notice('Saved weigh-ins could not be read. Weight saving is paused to protect them.');}
-function showWeightAverage(){const result=averageWeight(weights,selectedDay);$('weight-average').textContent=result.average===null?'— lbs':`${result.average.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})} lbs`;$('weight-average').title=`${result.count} weigh-in${result.count===1?'':'s'} in the seven days ending ${selectedDay}`;renderWeightChart(weights,selectedDay,sampleWeights,entries,goals);}
+function showWeightAverage(){const result=averageWeight(weights,selectedDay);$('weight-average').textContent=result.average===null?'— lbs':`${result.average.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})} lbs`;$('weight-average').title=`${result.count} weigh-in${result.count===1?'':'s'} in the seven days ending ${selectedDay}`;renderWeightChart(weights,selectedDay,sampleWeights,entries,goals);renderBmiChart(weights,selectedDay,settings);}
 function saveWeights(next){if(weightsUnreadable){$('weight-error').textContent='Saved weigh-ins could not be read. Saving is paused.';return false;}try{localStorage.setItem(WEIGHTS_KEY,JSON.stringify(next));weights=next;showWeightAverage();$('save-status').textContent='All entries saved';return true;}catch{$('weight-error').textContent='Could not save. Check browser storage and try again.';return false;}}
 $('open-weigh-in').addEventListener('click',()=>{weightDay=selectedDay;$('weigh-in-date').textContent=new Date(`${weightDay}T12:00:00`).toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'});$('weight-input').value=weights[weightDay]??'';$('weight-error').textContent='';$('remove-weight').hidden=!Object.hasOwn(weights,weightDay);$('weigh-in').showModal();$('weight-input').focus();$('weight-input').select();});
 $('close-weigh-in').addEventListener('click',()=>$('weigh-in').close());
@@ -110,10 +116,11 @@ $('date').addEventListener('change',()=>changeDay($('date').value));
 for(const [id,offset] of [['previous',-1],['next',1]])$(id).addEventListener('click',()=>{const d=new Date(`${selectedDay}T12:00:00`);d.setDate(d.getDate()+offset);changeDay(dayKey(d));});
 $('today').addEventListener('click',()=>changeDay(dayKey()));
 $('undo-button').addEventListener('click',()=>{if(removed&&persist([...entries,removed])){removed=null;clearTimeout(undoTimer);$('undo').hidden=true;render();}});
-$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),entries,goals,weights,defaultGoal:2700},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`daily-calories-${dayKey()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+$('export').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),entries,goals,weights,settings,defaultGoal:2700},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`daily-calories-${dayKey()}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
 window.addEventListener('storage',e=>{if(e.key===STORAGE_KEY){try{const data=JSON.parse(e.newValue??'[]');if(validateEntries(data)){entries=data;render();}}catch{notice('Another tab changed your saved data. Reload to check it.');}}});
 window.addEventListener('storage',e=>{if(e.key===GOALS_KEY){try{const data=JSON.parse(e.newValue??'{}');if(validateGoals(data)){goals=data;showGoal();updateSummary();}else throw Error();}catch{notice('Another tab changed your saved goals. Reload to check them.');}}});
 let lastToday=dayKey();setInterval(()=>{const today=dayKey();if(today!==lastToday){if(selectedDay===lastToday&&commitDraft())selectedDay=today;lastToday=today;render();}},30000);
 window.addEventListener('storage',event=>{if(event.key===WEIGHTS_KEY){try{const data=JSON.parse(event.newValue??'{}');if(!validateWeights(data))throw Error();weights=data;showWeightAverage();}catch{notice('Another tab changed saved weigh-ins. Reload to check them.');}}});
 render();
+window.addEventListener('storage',event=>{if(event.key===SETTINGS_KEY){try{const value=JSON.parse(event.newValue??'null');if(value!==null&&!validSettings(value))throw Error();settings=value;renderBmiChart(weights,selectedDay,settings);}catch{notice('Another tab changed saved settings. Reload to check them.');}}});
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>notice('Offline mode is unavailable. You can still use the tracker while connected.'));
